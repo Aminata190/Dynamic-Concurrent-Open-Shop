@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e  # stop if any command fails
+
+
+cd ../
+
+g++ exec_sto.cc Stochastic.cc Sincronia.cc GitHeur.cc ValueIteration.cc Job.cc -o exec_sto
+
+generationType=1
+
+gentype="g"
+
+for ((j=0; j<10; j++)); do     
+    for algo in "g" ;do #"o" "g" "s" "t"; do
+        ./execution_sto "$j" "$j" "$algo" "1" "$gentype"  #&
+    done      
+done
+
+
+wait
+

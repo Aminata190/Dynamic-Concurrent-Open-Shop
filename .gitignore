@@ -1,0 +1,13 @@
+# Editor settings
+.vscode/
+
+# Untracted folders
+COS/Analysis/
+COS/old_exec/
+COS/Plots/
+
+
+# Common Python clutter
+__pycache__/
+*.pyc
+.venv/

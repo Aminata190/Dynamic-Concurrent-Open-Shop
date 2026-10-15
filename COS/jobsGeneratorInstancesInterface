@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# --- Compile programs ---
+echo "Job Generator - Compiling program Multi Processors..."
+
+cd /home/asangho/Desktop/These/Coflow-Scheduling/Stochastic_Scheduling/Code/MDP/COS/
+# g++ JobsGenerator.cc  Job.cc -o JobsGenerator
+
+
+N="$1"
+m="$2"
+d="$3" # max value per distribution
+NUM_INST="$4"
+INPUTDIR="$5"
+
+printf -v INPUTDIR_F "%s/N%d_m%d/" "$INPUTDIR" "$N" "$m"
+
+echo "Save Directory $INPUTDIR_F "
+
+for INST in $(seq 1 ${NUM_INST}); do
+    printf -v INST_ID "%04d" ${INST}
+    echo "Instance N° is $INST_ID, N $j m $i d $d "
+
+    ./JobsGenerator "$N" "$m" "$d" "$INST_ID" "$INPUTDIR_F"
+
+done
+

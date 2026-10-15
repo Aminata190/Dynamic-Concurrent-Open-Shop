@@ -1,0 +1,78 @@
+#!/bin/bash
+set -e  # stop if any command fails
+
+# --- Compile programs ---
+echo "Compiling programs..."
+
+# g++ -O0 -g -fsanitize=address exec_sto.cc Stochastic.cc Sincronia.cc GitHeur.cc ValueIteration.cc Job.cc -o exec_sto // for debbuging
+# g++ exec_sto.cc Stochastic.cc Sincronia.cc GitHeur.cc ValueIteration.cc Job.cc -o exec_sto
+
+
+
+N=(10 20 40)
+m=(2 5 10)
+
+a="$1"  #0
+b="$2"  #10
+
+algo="$3" #"o": optimal (VI); "g": githeur; "s": sincronia; "t": static
+
+generationType="${4:-1}"  # VI only: 0 recursive, 1 order (default), 2 successive
+
+POLICYDIR=""  # g or s: "./Analysis/Outputs/exec_order" to compare with the saved VI policies (empty: no comparison)
+
+gentype="$5"  #d : discrete, g : geometric
+
+if [ "$gentype" = "g" ]; then
+    INPUTDIR="./Analysis/Inputs/Geo"
+    BASE_OUTPUTDIR="./Analysis/Outputs/Geo/sto"
+else
+    INPUTDIR="./Analysis/Inputs/Paper_data"
+    BASE_OUTPUTDIR="./Analysis/Outputs/discrete/sto"
+fi
+# INPUTDIR="./Analysis/Inputs/Paper_data"   #"/home/asangho/tmp/Stochastic/data/Param_data"  #"./Datas/data"    #"/tmp/Pfcalcul/data" #"./data_test"
+# BASE_OUTPUTDIR="./Analysis/Outputs/test_sto"
+
+
+if [ "$algo" = "o" ]; then
+    if [ "$generationType" -eq 0 ]; then
+        OUTPUTDIR="$BASE_OUTPUTDIR/rec"
+    elif [ "$generationType" -eq 1 ]; then
+        OUTPUTDIR="$BASE_OUTPUTDIR/order"
+    else
+        OUTPUTDIR="$BASE_OUTPUTDIR/suc"
+    fi
+elif [ "$algo" = "g" ]; then
+    OUTPUTDIR="$BASE_OUTPUTDIR/githeur"
+elif [ "$algo" = "s" ]; then
+    OUTPUTDIR="$BASE_OUTPUTDIR/sincronia"
+elif [ "$algo" = "t" ]; then
+    OUTPUTDIR="$BASE_OUTPUTDIR/static"
+else
+    echo "Invalid algo: $algo (o, g, s or t)"
+    exit 1
+fi
+
+
+for j in "${N[@]}"; do
+    for i in "${m[@]}"; do
+
+        printf -v INPUTDIR_F "%s/N%d_m%d/" "$INPUTDIR" "$j" "$i"
+        printf -v OUTPUTDIR_F "%s/N%d_m%d/" "$OUTPUTDIR" "$j" "$i"
+
+        OPTIONS=(-a "$a" -b "$b")
+        if [ "$algo" = "o" ]; then
+            OPTIONS+=(-l s -g "$generationType")      # add -p to save the VI policies
+        elif [ -n "$POLICYDIR" ]; then
+            printf -v POLICYDIR_F "%s/N%d_m%d/" "$POLICYDIR" "$j" "$i"
+            OPTIONS+=(-c "$POLICYDIR_F")
+        fi
+
+        echo "Running Stochastic($algo): N=$j jobs, m=$i processors | Instance(s): $a - $b"
+        # gdb --args ./exec_sto "${OPTIONS[@]}" "$j" "$i" "$algo" "$INPUTDIR_F" "$OUTPUTDIR_F" // for debbuging
+
+        stdbuf -oL -eL ./exec_sto "${OPTIONS[@]}" "$j" "$i" "$algo" "$gentype" "$INPUTDIR_F" "$OUTPUTDIR_F"
+        echo "--- Done ---"
+
+    done
+done

@@ -1,0 +1,28 @@
+# PySide6 Simulation Manager
+
+A complete PySide6 skeleton for managing simulations, browsing result folders, extracting data from `Results_opt_*.txt` files, and generating analysis plots.
+
+## Modules
+- `ui/`: Main window and tabs (Simulations, Results, Analysis, Export)
+- `core/`: Simulation runner, file scanning, extraction, analyzers, plotting
+- `models/`: Run configuration and result data classes
+
+## Features in the skeleton
+- Launch simulation UI with algorithm and parameter controls
+- Browse result directories
+- Extract average values and execution times from files
+- Compare two algorithms side-by-side
+- Plot scatter, line, box, and bar charts in the desktop app
+- Export tab placeholder for PDF/CSV/report generation
+
+## Run
+```bash
+pip install -r requirements.txt
+python app.py
+```
+
+## Next recommended steps
+1. Connect `SimulationRunner` to your real simulation executable or Python backend.
+2. Add `QThread` or `QThreadPool` for long-running simulations.
+3. Wire the Export tab to save current plots as PDF/PNG and tables as CSV.
+4. Add project persistence and run history.

@@ -1,0 +1,30 @@
+#!/bin/bash
+set -e  # stop if any command fails
+
+cd ./../
+
+g++ exec_saa.cc SAA.cc ValueIteration.cc GitHeur.cc Sincronia.cc Job.cc -o exec_saa
+
+nbInstancesMax=10
+batchSize=1
+tolerance=1e-2
+requiredStableBatches=1
+
+gentype="g"
+
+# CV=(1 2 5 10 25) #1 2  5 10 25)
+# CV=(25 ) #1 1.5 2 5 10 25)  #(0.5 1 1.5)
+
+c=0.0
+
+for ((j=0; j<1; j++)); do 
+    for algo in "g" "s" "t"; do
+    # algo="t"
+        # for c in "${CV[@]}"; do
+            # echo "CV= $c"
+            ./execution_saa "$j" "$j" "$algo" "$nbInstancesMax" "$batchSize" "$tolerance" "$requiredStableBatches" "$c" "$gentype"
+        # done
+    done  
+done
+
+

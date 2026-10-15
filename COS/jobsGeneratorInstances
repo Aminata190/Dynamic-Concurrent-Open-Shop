@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# --- Compile programs ---
+echo "Job Generator - Compiling program Multi Processors..."
+
+g++ JobsGenerator.cc  Job.cc -o JobsGenerator
+
+
+# INPUTDIR_PREFIX="/home/asangho/Desktop/These/Coflow-Scheduling/Stochastic Scheduling/Code/MDP/COS/data_manuelle/Test/"
+# INPUTDIR="./Analysis/Param_data"  #"./Datas/data"    #"/tmp/Pfcalcul/data" #"./data_test" 
+
+INPUTDIR="./Analysis/Inputs/Geo"   #"./Analysis/Param_data/CV_generation"   #"/home/asangho/tmp/Stochastic/data/Param_data"
+
+NUM_INST=10
+N=(10) 
+m=(2 5 10)
+# N=(10 20 40) 
+# m=(5 10 ) 
+
+d=2 # max value per distribution
+CV=(2 5 10)   #(0.5 1 1.5)   #(1 2 5 10 25)
+
+#For geometric distribution
+gentype="g"
+
+
+for j in "${N[@]}"; do
+    for i in "${m[@]}"; do
+        if [[ ( "$gentype" = "g" ) ]]; then
+            for INST in $(seq 1 ${NUM_INST}); do
+                printf -v INST_ID "%04d" ${INST}
+                # if [[ ( "$j" -eq 2 && "$i" -eq 2 ) ]]; then #|| ( "$j" -eq 2 && "$i" -eq 3 ) || ( "$j" -eq 3 && "$i" -eq 2 ) || ( "$j" -eq 3 && "$i" -eq 3 )]]; then
+                #     continue
+                # fi
+
+                echo "INST N° is $INST_ID, N $j M $i "
+
+                printf -v INPUTDIR_F "%s/N%d_m%d/" "$INPUTDIR" "$j" "$i"
+                
+                c=0.0
+                ./JobsGenerator "$j" "$i" "$d" "$INST_ID" "$c" "$INPUTDIR_F" "$gentype"
+            done
+        else
+        
+            for c in "${CV[@]}"; do
+                for INST in $(seq 1 ${NUM_INST}); do
+                    printf -v INST_ID "%04d" ${INST}
+                    # if [[ ( "$j" -eq 2 && "$i" -eq 2 ) ]]; then #|| ( "$j" -eq 2 && "$i" -eq 3 ) || ( "$j" -eq 3 && "$i" -eq 2 ) || ( "$j" -eq 3 && "$i" -eq 3 )]]; then
+                    #     continue
+                    # fi
+
+                    echo "INST N° is $INST_ID, N $j M $i "
+
+                    printf -v INPUTDIR_F "%s/N%d_m%d/CV_%s/" "$INPUTDIR" "$j" "$i" "$c"
+
+                    
+                    ./JobsGenerator "$j" "$i" "$d" "$INST_ID" "$c" "$INPUTDIR_F"
+                   
+                done
+            done
+        fi
+    done
+done
+

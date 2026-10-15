@@ -1,0 +1,95 @@
+#!/bin/bash
+set -e  # stop if any command fails
+
+# --- Compile programs ---
+# echo "Compiling programs..."
+
+# g++ exec_saa.cc SAA.cc ValueIteration.cc Job.cc -o exec_saa
+
+# g++ exec_saa.cc SAA.cc ValueIteration.cc GitHeur.cc Job.cc -o exec_saa
+
+# g++ -fopenmp exec_saa.cc SAA.cc ValueIteration.cc GitHeur.cc Sincronia.cc Job.cc -o exec_saa
+# g++ exec_saa.cc SAA.cc ValueIteration.cc GitHeur.cc Sincronia.cc Job.cc -o exec_saa
+
+
+
+N=(2) 
+m=(2)
+
+
+
+a="$1"  #0
+b="$2"  #10
+
+algo="$3" #"o": optimal; "s": sincronia; else githeur
+
+
+nbInstancesMax="$4"
+batchSize="$5"
+tolerance="$6"
+requiredStableBatches="$7"
+cv="$8"
+
+gentype="$9"  #d : discrete, g : geometric
+
+
+if [ "$gentype" = "g" ]; then
+    INPUTDIR="./Analysis/Inputs/Geo"
+    BASE_OUTPUTDIR="./Analysis/Outputs/Geo/saa"
+else
+    INPUTDIR="./Analysis/Inputs/Paper_data"
+    BASE_OUTPUTDIR="./Analysis/Outputs/discrete/saa"
+fi
+
+if [ "$algo" = "o" ]; then
+    OUTPUTDIR="$BASE_OUTPUTDIR/order" 
+elif [ "$algo" = "s" ]; then
+    OUTPUTDIR="$BASE_OUTPUTDIR/sincronia"   #"./Analysis/Outputs/exec_saa/Param_data/CV_generation/sinc/t"
+elif [ "$algo" = "t" ]; then
+    OUTPUTDIR="$BASE_OUTPUTDIR/static"  #"./Analysis/Outputs/exec_saa/Param_data/CV_generation/sta/t"
+elif [ "$algo" = "g" ]; then
+    OUTPUTDIR="$BASE_OUTPUTDIR/githeur"   #"./Analysis/Outputs/exec_saa/Param_data/CV_generation/git/t"
+else
+    echo "Invalid algo: $algo (o, g, s or t)"
+    exit 1
+fi
+
+
+
+for j in "${N[@]}"; do
+    for i in "${m[@]}"; do
+        
+        if [ "$cv" = "0.0" ]; then
+            printf -v INPUTDIR_F "%s/N%d_m%d/" "$INPUTDIR" "$j" "$i"
+        else
+            
+            printf -v INPUTDIR_F "%s/N%d_m%d/CV_%s" "$INPUTDIR" "$j" "$i" "$cv"
+        fi
+        # echo "$INPUTDIR_F"
+        
+        if [ "$cv" = "0.0" ]; then
+            printf -v OUTPUTDIR_F "%s/N%d_m%d/" "$OUTPUTDIR" "$j" "$i"
+        else
+            printf -v OUTPUTDIR_F "%s/N%d_m%d/CV_%s" "$OUTPUTDIR" "$j" "$i" "$cv"
+        fi
+        
+        if [ "$algo" = "o" ]; then
+            echo "Running SAA(Order-based): N=$j jobs, m=$i processors |nbInstancesMax=$nbInstancesMax | cv=$cv"
+        elif [ "$algo" = "s" ]; then
+            echo "Running SAA(Sincronia): N=$j jobs, m=$i processors |nbInstancesMax=$nbInstancesMax | cv=$cv"
+        elif [ "$algo" = "t" ]; then
+            echo "Running SAA(Static): N=$j jobs, m=$i processors |nbInstancesMax=$nbInstancesMax | cv=$cv"
+        else
+            echo "Running SAA(Githeur): N=$j jobs, m=$i processors |nbInstancesMax=$nbInstancesMax | cv=$cv"
+        fi
+        # gdb --args ./exec_saa -a "$a" -b "$b" "$j" "$i" "$nbInstancesMax" "$INPUTDIR" "$OUTPUTDIR" // for debbuging 
+
+        ./exec_saa -a "$a" -b "$b" "$j" "$i" "$algo" "$nbInstancesMax" "$batchSize" "$tolerance" "$requiredStableBatches" "$cv" "$gentype" "$INPUTDIR_F" "$OUTPUTDIR_F" 
+        
+        echo "--- Done ---"
+        
+    done
+   
+done
+
+
